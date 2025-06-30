@@ -26,13 +26,11 @@ import me.lucko.spark.common.sampler.ThreadDumper;
 import me.lucko.spark.common.tick.TickHook;
 import me.lucko.spark.common.tick.TickReporter;
 import me.lucko.spark.btw.*;
-import me.lucko.spark.btw.mixin.MinecraftClientAccessor;
 import me.lucko.spark.fabricapi.ClientEvents;
 import net.minecraft.src.*;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
 
 public class FabricClientSparkPlugin extends FabricSparkPlugin implements ICommand /*Command<FabricClientCommandSource>, SuggestionProvider<FabricClientCommandSource>*/ {

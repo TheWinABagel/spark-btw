@@ -2,14 +2,10 @@
   "required": true,
   "package": "me.lucko.spark.btw.mixin",
   "client": [
-    "ClientEntityManagerAccessor",
-    "ClientWorldAccessor",
-    "MinecraftClientAccessor"
+
   ],
   "mixins": [
-    "ServerEntityManagerAccessor",
-    "ServerWorldAccessor",
-    "WorldAccessor"
+
   ],
   "plugin": "me.lucko.spark.btw.plugin.FabricSparkMixinPlugin"
 }

@@ -5,3 +5,5 @@ out/
 run/
 *.iml
 .DS_Store
+/spark-btw-164/build_BTW/
+/spark-btw-164/custom_mappings/

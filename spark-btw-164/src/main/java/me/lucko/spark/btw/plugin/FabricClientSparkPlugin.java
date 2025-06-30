@@ -20,13 +20,6 @@
 
 package me.lucko.spark.btw.plugin;
 
-import com.mojang.brigadier.Command;
-import com.mojang.brigadier.CommandDispatcher;
-import com.mojang.brigadier.context.CommandContext;
-import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import com.mojang.brigadier.suggestion.SuggestionProvider;
-import com.mojang.brigadier.suggestion.Suggestions;
-import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import me.lucko.spark.common.platform.PlatformInfo;
 import me.lucko.spark.common.platform.world.WorldInfoProvider;
 import me.lucko.spark.common.sampler.ThreadDumper;
@@ -34,18 +27,14 @@ import me.lucko.spark.common.tick.TickHook;
 import me.lucko.spark.common.tick.TickReporter;
 import me.lucko.spark.btw.*;
 import me.lucko.spark.btw.mixin.MinecraftClientAccessor;
-import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
-import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.network.ClientPlayNetworkHandler;
-import net.minecraft.command.CommandRegistryAccess;
-import net.minecraft.src.Minecraft;
+import net.minecraft.src.*;
+import org.jetbrains.annotations.NotNull;
 
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
 
-public class FabricClientSparkPlugin extends FabricSparkPlugin implements Command<FabricClientCommandSource>, SuggestionProvider<FabricClientCommandSource> {
+public class FabricClientSparkPlugin extends FabricSparkPlugin implements ICommand /*Command<FabricClientCommandSource>, SuggestionProvider<FabricClientCommandSource>*/ {
 
     public static void register(FabricSparkMod mod, Minecraft client) {
         FabricClientSparkPlugin plugin = new FabricClientSparkPlugin(mod, client);
@@ -67,7 +56,9 @@ public class FabricClientSparkPlugin extends FabricSparkPlugin implements Comman
 
         // events
         ClientLifecycleEvents.CLIENT_STOPPING.register(this::onDisable);
-        ClientCommandRegistrationCallback.EVENT.register(this::onCommandRegister);
+//        ClientCommandRegistrationCallback.EVENT.register(this::onCommandRegister);
+
+        registerCommands(this, true);
     }
 
     private void onDisable(Minecraft stoppingClient) {
@@ -76,43 +67,92 @@ public class FabricClientSparkPlugin extends FabricSparkPlugin implements Comman
         }
     }
 
-    public void onCommandRegister(CommandDispatcher<FabricClientCommandSource> dispatcher, CommandRegistryAccess registryAccess) {
-        registerCommands(dispatcher, this, this, "sparkc", "sparkclient");
+//    public void onCommandRegister(CommandDispatcher<FabricClientCommandSource> dispatcher, CommandRegistryAccess registryAccess) {
+//        registerCommands(this, true);
+////        registerCommands(dispatcher, this, this, "sparkc", "sparkclient");
+//    }
+
+    @Override
+    public String getCommandUsage(ICommandSender iCommandSender) {
+        return "";
     }
 
     @Override
-    public int run(CommandContext<FabricClientCommandSource> context) throws CommandSyntaxException {
-        String[] args = processArgs(context, false, "sparkc", "sparkclient");
-        if (args == null) {
-            return 0;
-        }
-
-        this.platform.executeCommand(new FabricClientCommandSender(context.getSource()), args);
-        return Command.SINGLE_SUCCESS;
+    public List getCommandAliases() {
+        return List.of("sparkclient");
     }
 
     @Override
-    public CompletableFuture<Suggestions> getSuggestions(CommandContext<FabricClientCommandSource> context, SuggestionsBuilder builder) throws CommandSyntaxException {
-        String[] args = processArgs(context, true, "/sparkc", "/sparkclient");
-        if (args == null) {
-            return Suggestions.empty();
+    public void processCommand(ICommandSender senderContext, String[] args) {
+        String[] realArgs = processArgs(senderContext, false, args, "sparkc", "sparkclient");
+        if (realArgs == null) {
+            return;
         }
 
-        return generateSuggestions(new FabricClientCommandSender(context.getSource()), args, builder);
+        this.platform.executeCommand(new FabricClientCommandSender(senderContext), realArgs);
     }
+
+    @Override
+    public boolean canCommandSenderUseCommand(ICommandSender iCommandSender) {
+        return true;
+    }
+
+    @Override
+    public boolean isUsernameIndex(String[] strings, int i) {
+        return false;
+    }
+
+    @Override
+    public int compareTo(@NotNull Object o) {
+        return 0;
+    }
+
+//    @Override
+//    public int run(CommandContext<FabricClientCommandSource> context) throws CommandException {
+//        String[] args = processArgs(context, false, "sparkc", "sparkclient");
+//        if (args == null) {
+//            return 0;
+//        }
+//
+//        this.platform.executeCommand(new FabricClientCommandSender(context.getSource()), args);
+//        return Command.SINGLE_SUCCESS;
+//    }
+
+    @Override
+    public List<String> addTabCompletionOptions(ICommandSender iCommandSender, String[] args) {
+        String[] realArgs = processArgs(iCommandSender, true, args, "/sparkc", "/sparkclient");
+        if (realArgs == null) {
+            return List.of();
+        }
+
+//        this.platform.executeCommand(new FabricClientCommandSender(iCommandSender), realArgs);
+
+        return generateSuggestions(new FabricClientCommandSender(iCommandSender), args);
+    }
+
+//    @Override
+//    public CompletableFuture<Suggestions> getSuggestions(CommandContext<FabricClientCommandSource> context, SuggestionsBuilder builder) throws CommandSyntaxException {
+//        String[] args = processArgs(context, true, "/sparkc", "/sparkclient");
+//        if (args == null) {
+//            return Suggestions.empty();
+//        }
+//
+//        return generateSuggestions(new FabricClientCommandSender(context.getSource()), args, builder);
+//    }
 
     @Override
     public Stream<FabricClientCommandSender> getCommandSenders() {
-        ClientPlayNetworkHandler networkHandler = this.minecraft.getNetworkHandler();
-        if (networkHandler == null) {
+        EntityClientPlayerMP player = this.minecraft.thePlayer;
+        if (player == null) {
             return Stream.empty();
         }
-        return Stream.of(new FabricClientCommandSender(networkHandler.getCommandSource()));
+        return Stream.of(new FabricClientCommandSender(player));
     }
 
     @Override
     public void executeSync(Runnable task) {
-        this.minecraft.executeSync(task);
+        task.run();
+//        this.minecraft.executeSync(task);
     }
 
     @Override
@@ -144,5 +184,6 @@ public class FabricClientSparkPlugin extends FabricSparkPlugin implements Comman
     public String getCommandName() {
         return "sparkc";
     }
+
 
 }

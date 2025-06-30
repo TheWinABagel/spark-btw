@@ -18,12 +18,6 @@ buildscript {
             url = 'https://jitpack.io'
         }
     }
-
-    dependencies {
-        classpath ('com.anatawa12.forge:ForgeGradle:1.2-1.0.+') {
-            changing = true
-        }
-    }
 }
 
 plugins {
@@ -33,7 +27,7 @@ plugins {
 
 tasks.withType(JavaCompile) {
     // override, compile targeting J21 todo is this right?
-    options.release = 21
+    options.release = 17
 }
 
 repositories {
@@ -165,7 +159,7 @@ task remappedShadowJar(type: RemapJarTask) {
     dependsOn tasks.shadowJar
     input = tasks.shadowJar.archiveFile
     addNestedDependencies = true
-    archiveFileName = "spark-${project.pluginVersion}-fabric.jar"
+    archiveFileName = "spark-${project.pluginVersion}-btw.jar"
 }
 
 tasks.assemble.dependsOn tasks.remappedShadowJar

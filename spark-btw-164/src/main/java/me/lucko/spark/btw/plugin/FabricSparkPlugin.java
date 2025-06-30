@@ -20,6 +20,7 @@
 
 package me.lucko.spark.btw.plugin;
 
+import btw.AddonHandler;
 import me.lucko.spark.common.SparkPlatform;
 import me.lucko.spark.common.SparkPlugin;
 import me.lucko.spark.common.command.sender.CommandSender;
@@ -30,12 +31,16 @@ import me.lucko.spark.btw.FabricClassSourceLookup;
 import me.lucko.spark.btw.FabricSparkMod;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.metadata.Person;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.src.ICommand;
+import net.minecraft.src.ICommandSender;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -121,50 +126,71 @@ public abstract class FabricSparkPlugin implements SparkPlugin {
         );
     }
 
-    protected CompletableFuture<Suggestions> generateSuggestions(CommandSender sender, String[] args, SuggestionsBuilder builder) {
-        SuggestionsBuilder suggestions;
-
-        int lastSpaceIdx = builder.getRemaining().lastIndexOf(' ');
-        if (lastSpaceIdx != -1) {
-            suggestions = builder.createOffset(builder.getStart() + lastSpaceIdx + 1);
-        } else {
-            suggestions = builder;
-        }
-
-        return CompletableFuture.supplyAsync(() -> {
-            for (String suggestion : this.platform.tabCompleteCommand(sender, args)) {
-                suggestions.suggest(suggestion);
-            }
-            return suggestions.build();
-        });
+    protected List<String> generateSuggestions(CommandSender sender, String[] args) {
+        return this.platform.tabCompleteCommand(sender, args);
     }
 
-    protected static <T> void registerCommands(CommandDispatcher<T> dispatcher, Command<T> executor, SuggestionProvider<T> suggestor, String... aliases) {
-        if (aliases.length == 0) {
-            return;
-        }
+//    protected CompletableFuture<Suggestions> generateSuggestions(CommandSender sender, String[] args, SuggestionsBuilder builder) {
+//        SuggestionsBuilder suggestions;
+//
+//        int lastSpaceIdx = builder.getRemaining().lastIndexOf(' ');
+//        if (lastSpaceIdx != -1) {
+//            suggestions = builder.createOffset(builder.getStart() + lastSpaceIdx + 1);
+//        } else {
+//            suggestions = builder;
+//        }
+//
+//        return CompletableFuture.supplyAsync(() -> {
+//            for (String suggestion : this.platform.tabCompleteCommand(sender, args)) {
+//                suggestions.suggest(suggestion);
+//            }
+//            return suggestions.build();
+//        });
+//    }
 
-        String mainName = aliases[0];
-        LiteralArgumentBuilder<T> command = LiteralArgumentBuilder.<T>literal(mainName)
-                .executes(executor)
-                .then(RequiredArgumentBuilder.<T, String>argument("args", StringArgumentType.greedyString())
-                        .suggests(suggestor)
-                        .executes(executor)
-                );
-
-        LiteralCommandNode<T> node = dispatcher.register(command);
-        for (int i = 1; i < aliases.length; i++) {
-            dispatcher.register(LiteralArgumentBuilder.<T>literal(aliases[i]).redirect(node));
-        }
+    protected static void registerCommands(ICommand command, boolean clientOnly) {
+        AddonHandler.registerCommand(command, clientOnly);
     }
 
-    protected static String[] processArgs(CommandContext<?> context, boolean tabComplete, String... aliases) {
-        String[] split = context.getInput().split(" ", tabComplete ? -1 : 0);
+//    protected static <T> void registerCommands(CommandDispatcher<T> dispatcher, Command<T> executor, SuggestionProvider<T> suggestor, String... aliases) {
+//        if (aliases.length == 0) {
+//            return;
+//        }
+//
+//        String mainName = aliases[0];
+//        LiteralArgumentBuilder<T> command = LiteralArgumentBuilder.<T>literal(mainName)
+//                .executes(executor)
+//                .then(RequiredArgumentBuilder.<T, String>argument("args", StringArgumentType.greedyString())
+//                        .suggests(suggestor)
+//                        .executes(executor)
+//                );
+//
+//        LiteralCommandNode<T> node = dispatcher.register(command);
+//        for (int i = 1; i < aliases.length; i++) {
+//            dispatcher.register(LiteralArgumentBuilder.<T>literal(aliases[i]).redirect(node));
+//        }
+//    }
+
+    protected static String[] processArgs(ICommandSender sender, boolean tabComplete, String[] args, String... aliases) {
+        //todo think of a better way to filter?
+        String newArgs = "";
+        for (String arg : args) {
+            newArgs = arg + " ";
+        }
+        String[] split = newArgs.split(" ", tabComplete ? -1 : 0);
         if (split.length == 0 || !Arrays.asList(aliases).contains(split[0])) {
             return null;
         }
-
         return Arrays.copyOfRange(split, 1, split.length);
     }
+
+//    protected static String[] processArgs(CommandContext<?> context, boolean tabComplete, String... aliases) {
+//        String[] split = context.getInput().split(" ", tabComplete ? -1 : 0);
+//        if (split.length == 0 || !Arrays.asList(aliases).contains(split[0])) {
+//            return null;
+//        }
+//
+//        return Arrays.copyOfRange(split, 1, split.length);
+//    }
 
 }

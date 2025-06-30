@@ -80,7 +80,7 @@ public class FabricSparkMod implements ModInitializer {
 
     public void onServerCommandRegister(CommandDispatcher<ServerCommandSource> dispatcher, CommandRegistryAccess access, RegistrationEnvironment env) {
         if (this.activeServerPlugin != null) {
-            this.activeServerPlugin.registerCommands(dispatcher);
+            this.activeServerPlugin.registerCommands();
         }
     }
 

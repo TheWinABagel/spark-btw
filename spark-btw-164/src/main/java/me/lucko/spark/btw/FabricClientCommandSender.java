@@ -21,44 +21,42 @@
 package me.lucko.spark.btw;
 
 import com.google.gson.JsonParseException;
-import com.mojang.serialization.JsonOps;
 import me.lucko.spark.common.command.sender.AbstractCommandSender;
-import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
-import net.minecraft.client.network.ClientCommandSource;
-import net.minecraft.registry.DynamicRegistryManager;
-import net.minecraft.text.Text;
-import net.minecraft.text.TextCodecs;
+import net.minecraft.src.ChatMessageComponent;
+import net.minecraft.src.CommandBase;
+import net.minecraft.src.EntityPlayer;
+import net.minecraft.src.ICommandSender;
 
 import java.util.UUID;
 
-public class FabricClientCommandSender extends AbstractCommandSender<FabricClientCommandSource> {
-    public FabricClientCommandSender(FabricClientCommandSource commandSource) {
+public class FabricClientCommandSender extends AbstractCommandSender<ICommandSender> {
+    ICommandSender sender;
+    public FabricClientCommandSender(ICommandSender commandSource) {
         super(commandSource);
-    }
-
-    public FabricClientCommandSender(ClientCommandSource commandSource) {
-        this((FabricClientCommandSource) commandSource);
     }
 
     @Override
     public String getName() {
-        return this.delegate.getPlayer().getGameProfile().getName();
+        return this.delegate.getCommandSenderName();
     }
 
     @Override
     public UUID getUniqueId() {
-        return this.delegate.getPlayer().getUuid();
+        return ((EntityPlayer) this.delegate).getUniqueID();
     }
 
     @Override
     public void sendMessage(Component message) {
-        Text component = TextCodecs.CODEC.decode(
-                DynamicRegistryManager.EMPTY.getOps(JsonOps.INSTANCE),
-                GsonComponentSerializer.gson().serializeToTree(message)
-        ).getOrThrow(JsonParseException::new).getFirst();
-        this.delegate.sendFeedback(component);
+        var text = new ChatMessageComponent();
+        text.addText(GsonComponentSerializer.gson().serializeToTree(message).getAsString()); //todo Client message?
+//        Text component = TextCodecs.CODEC.decode(
+//                DynamicRegistryManager.EMPTY.getOps(JsonOps.INSTANCE),
+//                GsonComponentSerializer.gson().serializeToTree(message)
+//        ).getOrThrow(JsonParseException::new).getFirst();
+//        this.delegate.sendFeedback(component);
+        this.delegate.sendChatToPlayer(text);
     }
 
     @Override
@@ -68,6 +66,6 @@ public class FabricClientCommandSender extends AbstractCommandSender<FabricClien
 
     @Override
     protected Object getObjectForComparison() {
-        return this.delegate.getPlayer();
+        return CommandBase.getCommandSenderAsPlayer(this.delegate);
     }
 }

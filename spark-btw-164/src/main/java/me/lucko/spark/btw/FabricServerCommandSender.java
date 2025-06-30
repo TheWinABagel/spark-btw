@@ -20,31 +20,28 @@
 
 package me.lucko.spark.btw;
 
-import com.google.gson.JsonParseException;
-import com.mojang.serialization.JsonOps;
-import me.lucko.fabric.api.permissions.v0.Permissions;
+
 import me.lucko.spark.common.command.sender.AbstractCommandSender;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
-import net.minecraft.entity.Entity;
-import net.minecraft.registry.DynamicRegistryManager;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
-import net.minecraft.text.TextCodecs;
+import net.minecraft.src.ChatMessageComponent;
+import net.minecraft.src.EntityPlayer;
+import net.minecraft.src.ICommandSender;
+import net.minecraft.src.TileEntityCommandBlock;
 
 import java.util.UUID;
 
-public class FabricServerCommandSender extends AbstractCommandSender<ServerCommandSource> {
-    public FabricServerCommandSender(ServerCommandSource commandSource) {
+public class FabricServerCommandSender extends AbstractCommandSender<ICommandSender> {
+    public FabricServerCommandSender(ICommandSender commandSource) {
         super(commandSource);
     }
 
     @Override
     public String getName() {
-        String name = this.delegate.getName();
-        if (this.delegate.getEntity() != null && name.equals("Server")) {
+        String name = this.delegate.getCommandSenderName();
+        /*this.delegate.getEntity() != null*/
+        if (!(this.delegate instanceof TileEntityCommandBlock) && (name.equals("Rcon") || name.equals("Server"))) {
             return "Console";
         }
         return name;
@@ -52,32 +49,43 @@ public class FabricServerCommandSender extends AbstractCommandSender<ServerComma
 
     @Override
     public UUID getUniqueId() {
-        Entity entity = this.delegate.getEntity();
-        return entity != null ? entity.getUuid() : null;
+        if (this.delegate instanceof EntityPlayer ep) {
+            return ep.getUniqueID();
+        }
+        return null;
+//        Entity entity = this.delegate.getEntity();
+//        return entity != null ? entity.getUuid() : null;
     }
 
     @Override
     public void sendMessage(Component message) {
-        Text component = TextCodecs.CODEC.decode(
-                DynamicRegistryManager.EMPTY.getOps(JsonOps.INSTANCE),
-                GsonComponentSerializer.gson().serializeToTree(message)
-        ).getOrThrow(JsonParseException::new).getFirst();
-        this.delegate.sendMessage(component);
+        var text = new ChatMessageComponent();
+        text.addText(GsonComponentSerializer.gson().serializeToTree(message).getAsString()); //todo Server message?
+//        Text component = TextCodecs.CODEC.decode(
+//                DynamicRegistryManager.EMPTY.getOps(JsonOps.INSTANCE),
+//                GsonComponentSerializer.gson().serializeToTree(message)
+//        ).getOrThrow(JsonParseException::new).getFirst();
+//        this.delegate.sendFeedback(component);
+        this.delegate.sendChatToPlayer(text);
     }
 
     @Override
     public boolean hasPermission(String permission) {
-        return Permissions.getPermissionValue(this.delegate, permission).orElseGet(() -> {
-            ServerPlayerEntity player = this.delegate.getPlayer();
-            MinecraftServer server = this.delegate.getServer();
-            if (player != null) {
-                if (server != null && server.isHost(player.getGameProfile())) {
-                    return true;
-                }
-                return player.hasPermissionLevel(4);
-            }
+        if (MinecraftServer.getIsServer() && !MinecraftServer.getServer().isDedicatedServer()) {
             return true;
-        });
+        }
+        return this.delegate.canCommandSenderUseCommand(4, "spark");
+//        return Permissions.getPermissionValue(this.delegate, permission).orElseGet(() -> {
+//            ServerPlayerEntity player = this.delegate.getPlayer();
+//            MinecraftServer server = this.delegate.getServer();
+//            if (player != null) {
+//                if (server != null && server.isHost(player.getGameProfile())) {
+//                    return true;
+//                }
+//                return player.hasPermissionLevel(4);
+//            }
+//            return true;
+//        });
     }
 
     @Override
@@ -86,10 +94,10 @@ public class FabricServerCommandSender extends AbstractCommandSender<ServerComma
         if (uniqueId != null) {
             return uniqueId;
         }
-        Entity entity = this.delegate.getEntity();
-        if (entity != null) {
-            return entity;
-        }
+//        Entity entity = this.delegate.getEntity();
+//        if (entity != null) {
+//            return entity;
+//        }
         return getName();
     }
 }

@@ -35,6 +35,8 @@ import net.minecraft.resource.ResourcePackSource;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.world.ServerEntityManager;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.src.Minecraft;
+import net.minecraft.src.WorldClient;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.GameRules;
 import net.minecraft.world.entity.ClientEntityManager;
@@ -153,15 +155,15 @@ public abstract class FabricWorldInfoProvider implements WorldInfoProvider {
     }
 
     public static final class Client extends FabricWorldInfoProvider {
-        private final MinecraftClient client;
+        private final Minecraft client;
 
-        public Client(MinecraftClient client) {
+        public Client(Minecraft client) {
             this.client = client;
         }
 
         @Override
         public CountsResult pollCounts() {
-            ClientWorld world = this.client.world;
+            WorldClient world = this.client.theWorld;
             if (world == null) {
                 return null;
             }

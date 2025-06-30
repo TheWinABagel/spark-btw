@@ -20,13 +20,6 @@
 
 package me.lucko.spark.btw.plugin;
 
-import com.mojang.brigadier.Command;
-import com.mojang.brigadier.CommandDispatcher;
-import com.mojang.brigadier.context.CommandContext;
-import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import com.mojang.brigadier.suggestion.SuggestionProvider;
-import com.mojang.brigadier.suggestion.Suggestions;
-import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import me.lucko.spark.common.monitor.ping.PlayerPingProvider;
 import me.lucko.spark.common.platform.PlatformInfo;
 import me.lucko.spark.common.platform.serverconfig.ServerConfigProvider;
@@ -35,16 +28,18 @@ import me.lucko.spark.common.sampler.ThreadDumper;
 import me.lucko.spark.common.tick.TickHook;
 import me.lucko.spark.common.tick.TickReporter;
 import me.lucko.spark.btw.*;
-import me.lucko.spark.btw.placeholder.SparkFabricPlaceholderApi;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.src.EntityPlayerMP;
+import net.minecraft.src.ICommand;
+import net.minecraft.src.ICommandSender;
+import org.jetbrains.annotations.NotNull;
 
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
 
-public class FabricServerSparkPlugin extends FabricSparkPlugin implements Command<ServerCommandSource>, SuggestionProvider<ServerCommandSource> {
+public class FabricServerSparkPlugin extends FabricSparkPlugin implements ICommand {
 
     public static FabricServerSparkPlugin register(FabricSparkMod mod, MinecraftServer server) {
         FabricServerSparkPlugin plugin = new FabricServerSparkPlugin(mod, server);
@@ -58,7 +53,7 @@ public class FabricServerSparkPlugin extends FabricSparkPlugin implements Comman
     public FabricServerSparkPlugin(FabricSparkMod mod, MinecraftServer server) {
         super(mod);
         this.server = server;
-        this.gameThreadDumper = new ThreadDumper.Specific(server.getThread());
+        this.gameThreadDumper = new ThreadDumper.Specific(Thread.currentThread()/* server.getThread()*/);
     }
 
     @Override
@@ -66,45 +61,68 @@ public class FabricServerSparkPlugin extends FabricSparkPlugin implements Comman
         super.enable();
 
         // register commands
-        registerCommands(this.server.getCommandManager().getDispatcher());
+        registerCommands();
     }
 
-    public void registerCommands(CommandDispatcher<ServerCommandSource> dispatcher) {
-        registerCommands(dispatcher, this, this, "spark");
+    public void registerCommands() {
+        registerCommands(this, false);
+//        registerCommands(dispatcher, this, this, "spark");
     }
 
+//    @Override
+//    public int run(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+//
+//        String[] args = processArgs(context, false, "/spark", "spark");
+//        if (args == null) {
+//            return 0;
+//        }
+//
+//        this.platform.executeCommand(new FabricServerCommandSender(context.getSource()), args);
+//        return Command.SINGLE_SUCCESS;
+//    }
     @Override
-    public int run(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        String[] args = processArgs(context, false, "/spark", "spark");
+    public void processCommand(ICommandSender sender, String[] strings) {
+        String[] args = processArgs(sender, false, strings, "/spark", "spark");
         if (args == null) {
-            return 0;
+            return;
         }
 
-        this.platform.executeCommand(new FabricServerCommandSender(context.getSource()), args);
-        return Command.SINGLE_SUCCESS;
+        this.platform.executeCommand(new FabricServerCommandSender(sender), args);
     }
 
+//    @Override
+//    public CompletableFuture<Suggestions> getSuggestions(CommandContext<ServerCommandSource> context, SuggestionsBuilder builder) throws CommandSyntaxException {
+//        String[] args = processArgs(context, true, "/spark", "spark");
+//        if (args == null) {
+//            return Suggestions.empty();
+//        }
+//
+//        return generateSuggestions(new FabricServerCommandSender(context.getSource()), args, builder);
+//    }
+
+
     @Override
-    public CompletableFuture<Suggestions> getSuggestions(CommandContext<ServerCommandSource> context, SuggestionsBuilder builder) throws CommandSyntaxException {
-        String[] args = processArgs(context, true, "/spark", "spark");
-        if (args == null) {
-            return Suggestions.empty();
+    public List addTabCompletionOptions(ICommandSender iCommandSender, String[] strings) {
+        String[] realArgs = processArgs(iCommandSender, true, strings, "/spark", "spark");
+        if (realArgs == null) {
+            return List.of();
         }
 
-        return generateSuggestions(new FabricServerCommandSender(context.getSource()), args, builder);
+        return generateSuggestions(new FabricServerCommandSender(iCommandSender), realArgs);
     }
 
     @Override
     public Stream<FabricServerCommandSender> getCommandSenders() {
         return Stream.concat(
-                this.server.getPlayerManager().getPlayerList().stream().map(ServerPlayerEntity::getCommandSource),
-                Stream.of(this.server.getCommandSource())
-        ).map(FabricServerCommandSender::new);
+                this.server.getConfigurationManager().playerEntityList.stream(),
+                Stream.of(this.server)
+        ).map(o -> new FabricServerCommandSender((ICommandSender)o));
     }
 
     @Override
     public void executeSync(Runnable task) {
-        this.server.executeSync(task);
+        task.run();
+//        this.server.executeSync(task);
     }
 
     @Override
@@ -145,5 +163,31 @@ public class FabricServerSparkPlugin extends FabricSparkPlugin implements Comman
     @Override
     public String getCommandName() {
         return "spark";
+    }
+
+    @Override
+    public List getCommandAliases() {
+        return List.of();
+    }
+
+    @Override
+    public String getCommandUsage(ICommandSender iCommandSender) {
+        return "";
+    }
+
+    @Override
+    public boolean canCommandSenderUseCommand(ICommandSender iCommandSender) {
+        return iCommandSender.canCommandSenderUseCommand(4, "spark");
+    }
+
+    @Override
+    public boolean isUsernameIndex(String[] strings, int i) {
+        return false;
+    }
+
+    @Override
+    public int compareTo(@NotNull Object o) {
+
+        return 0;
     }
 }

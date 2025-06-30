@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-package me.lucko.spark.fabricapi.api.event;
+package me.lucko.spark.fabricapi.eventapi.api.event;
 
-import me.lucko.spark.fabricapi.impl.base.event.EventFactoryImpl;
+import me.lucko.spark.fabricapi.eventapi.impl.base.event.EventFactoryImpl;
 import net.minecraft.src.ResourceLocation;
 
 import java.util.function.Function;

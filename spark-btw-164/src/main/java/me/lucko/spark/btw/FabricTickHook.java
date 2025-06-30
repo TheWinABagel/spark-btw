@@ -22,10 +22,10 @@ package me.lucko.spark.btw;
 
 import me.lucko.spark.common.tick.AbstractTickHook;
 import me.lucko.spark.common.tick.TickHook;
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
-import net.minecraft.client.MinecraftClient;
+import me.lucko.spark.fabricapi.ClientEvents;
+import me.lucko.spark.fabricapi.ServerEvents;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.src.Minecraft;
 
 public abstract class FabricTickHook extends AbstractTickHook implements TickHook {
     protected boolean closed = false;
@@ -42,7 +42,7 @@ public abstract class FabricTickHook extends AbstractTickHook implements TickHoo
         this.closed = true;
     }
 
-    public static final class Server extends FabricTickHook implements ServerTickEvents.StartTick {
+    public static final class Server extends FabricTickHook implements ServerEvents.TickEvents.TickStart {
         @Override
         public void onStartTick(MinecraftServer minecraftServer) {
             onTick();
@@ -50,19 +50,19 @@ public abstract class FabricTickHook extends AbstractTickHook implements TickHoo
 
         @Override
         public void start() {
-            ServerTickEvents.START_SERVER_TICK.register(this);
+            ServerEvents.START_SERVER_TICK.register(this);
         }
     }
 
-    public static final class Client extends FabricTickHook implements ClientTickEvents.StartTick {
+    public static final class Client extends FabricTickHook implements ClientEvents.TickEvents.TickStart {
         @Override
-        public void onStartTick(MinecraftClient minecraftClient) {
+        public void onStartTick(Minecraft minecraftClient) {
             onTick();
         }
 
         @Override
         public void start() {
-            ClientTickEvents.START_CLIENT_TICK.register(this);
+            ClientEvents.START_CLIENT_TICK.register(this);
         }
     }
 }

@@ -20,18 +20,13 @@
 
 package me.lucko.spark.btw;
 
-import com.mojang.brigadier.CommandDispatcher;
 import me.lucko.spark.btw.plugin.FabricClientSparkPlugin;
 import me.lucko.spark.btw.plugin.FabricServerSparkPlugin;
+import me.lucko.spark.fabricapi.ServerEvents;
 import net.fabricmc.api.ModInitializer;
-import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
-import net.minecraft.command.CommandRegistryAccess;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.command.CommandManager.RegistrationEnvironment;
-import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.src.Minecraft;
 
 import java.nio.file.Path;
@@ -55,9 +50,10 @@ public class FabricSparkMod implements ModInitializer {
         this.configDirectory = loader.getConfigDir().resolve("spark");
 
         // server event hooks
-        ServerLifecycleEvents.SERVER_STARTING.register(this::initializeServer);
-        ServerLifecycleEvents.SERVER_STOPPING.register(this::onServerStopping);
-        CommandRegistrationCallback.EVENT.register(this::onServerCommandRegister);
+        ServerEvents.SERVER_STARTING.register(this::initializeServer);
+        ServerEvents.SERVER_STOPPING.register(this::onServerStopping);
+
+//        CommandRegistrationCallback.EVENT.register(this::onServerCommandRegister); todo check if this should be registered later?
     }
 
     // client (called by entrypoint defined in fabric.mod.json)
@@ -69,6 +65,10 @@ public class FabricSparkMod implements ModInitializer {
     // server
     public void initializeServer(MinecraftServer server) {
         this.activeServerPlugin = FabricServerSparkPlugin.register(this, server);
+
+        if (this.activeServerPlugin != null) {
+            this.activeServerPlugin.registerCommands();
+        }
     }
 
     public void onServerStopping(MinecraftServer stoppingServer) {
@@ -78,11 +78,11 @@ public class FabricSparkMod implements ModInitializer {
         }
     }
 
-    public void onServerCommandRegister(CommandDispatcher<ServerCommandSource> dispatcher, CommandRegistryAccess access, RegistrationEnvironment env) {
-        if (this.activeServerPlugin != null) {
-            this.activeServerPlugin.registerCommands();
-        }
-    }
+//    public void onServerCommandRegister(CommandDispatcher<ServerCommandSource> dispatcher, CommandRegistryAccess access, RegistrationEnvironment env) {
+//        if (this.activeServerPlugin != null) {
+//            this.activeServerPlugin.registerCommands();
+//        }
+//    }
 
     public String getVersion() {
         return this.container.getMetadata().getVersion().getFriendlyString();

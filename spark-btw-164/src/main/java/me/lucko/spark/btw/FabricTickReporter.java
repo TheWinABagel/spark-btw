@@ -22,14 +22,14 @@ package me.lucko.spark.btw;
 
 import me.lucko.spark.common.tick.SimpleTickReporter;
 import me.lucko.spark.common.tick.TickReporter;
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
-import net.minecraft.client.MinecraftClient;
+import me.lucko.spark.fabricapi.ClientEvents;
+import me.lucko.spark.fabricapi.ServerEvents;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.src.Minecraft;
 
 public abstract class FabricTickReporter extends SimpleTickReporter implements TickReporter {
 
-    public static final class Server extends FabricTickReporter implements ServerTickEvents.StartTick, ServerTickEvents.EndTick {
+    public static final class Server extends FabricTickReporter implements ServerEvents.TickEvents.TickStart, ServerEvents.TickEvents.TickEnd {
         @Override
         public void onStartTick(MinecraftServer minecraftServer) {
             onStart();
@@ -42,26 +42,26 @@ public abstract class FabricTickReporter extends SimpleTickReporter implements T
 
         @Override
         public void start() {
-            ServerTickEvents.START_SERVER_TICK.register(this);
-            ServerTickEvents.END_SERVER_TICK.register(this);
+            ServerEvents.START_SERVER_TICK.register(this);
+            ServerEvents.END_SERVER_TICK.register(this);
         }
     }
 
-    public static final class Client extends FabricTickReporter implements ClientTickEvents.StartTick, ClientTickEvents.EndTick {
+    public static final class Client extends FabricTickReporter implements ClientEvents.TickEvents.TickStart, ClientEvents.TickEvents.TickEnd {
         @Override
-        public void onStartTick(MinecraftClient minecraftClient) {
+        public void onStartTick(Minecraft minecraftClient) {
             onStart();
         }
 
         @Override
-        public void onEndTick(MinecraftClient minecraftClient) {
+        public void onEndTick(Minecraft minecraftClient) {
             onEnd();
         }
 
         @Override
         public void start() {
-            ClientTickEvents.START_CLIENT_TICK.register(this);
-            ClientTickEvents.END_CLIENT_TICK.register(this);
+            ClientEvents.START_CLIENT_TICK.register(this);
+            ClientEvents.END_CLIENT_TICK.register(this);
         }
     }
 }

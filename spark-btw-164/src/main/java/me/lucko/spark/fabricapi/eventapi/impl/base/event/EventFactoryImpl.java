@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package me.lucko.spark.fabricapi.impl.base.event;
+package me.lucko.spark.fabricapi.eventapi.impl.base.event;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
@@ -28,7 +28,7 @@ import java.util.Set;
 import java.util.function.Function;
 
 import com.google.common.collect.MapMaker;
-import me.lucko.spark.fabricapi.api.event.Event;
+import me.lucko.spark.fabricapi.eventapi.api.event.Event;
 import net.minecraft.src.ResourceLocation;
 
 public final class EventFactoryImpl {

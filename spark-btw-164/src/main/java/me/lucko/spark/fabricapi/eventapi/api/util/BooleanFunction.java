@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package me.lucko.spark.fabricapi.api.util;
+package me.lucko.spark.fabricapi.eventapi.api.util;
 
 /**
  * Represents a function that accepts a boolean-valued argument and produces a result.

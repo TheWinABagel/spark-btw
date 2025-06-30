@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-package me.lucko.spark.fabricapi.impl.base.event;
+package me.lucko.spark.fabricapi.eventapi.impl.base.event;
 
-import me.lucko.spark.fabricapi.impl.base.toposort.SortableNode;
+import me.lucko.spark.fabricapi.eventapi.impl.base.toposort.SortableNode;
 import net.minecraft.src.ResourceLocation;
 
 import java.lang.reflect.Array;

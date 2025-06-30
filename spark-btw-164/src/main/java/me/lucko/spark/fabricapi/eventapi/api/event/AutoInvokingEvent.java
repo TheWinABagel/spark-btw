@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package me.lucko.spark.fabricapi.api.event;
+package me.lucko.spark.fabricapi.eventapi.api.event;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;

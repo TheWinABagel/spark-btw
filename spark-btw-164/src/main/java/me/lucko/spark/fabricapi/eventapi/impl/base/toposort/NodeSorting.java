@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package me.lucko.spark.fabricapi.impl.base.toposort;
+package me.lucko.spark.fabricapi.eventapi.impl.base.toposort;
 
 import java.util.ArrayList;
 import java.util.Collections;

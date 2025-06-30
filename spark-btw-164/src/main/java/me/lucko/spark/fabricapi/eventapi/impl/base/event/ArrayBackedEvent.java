@@ -1,4 +1,4 @@
-package me.lucko.spark.fabricapi.impl.base.event;
+package me.lucko.spark.fabricapi.eventapi.impl.base.event;
 /*
  * Copyright (c) 2016, 2017, 2018, 2019 FabricMC
  *
@@ -15,8 +15,8 @@ package me.lucko.spark.fabricapi.impl.base.event;
  * limitations under the License.
  */
 
-import me.lucko.spark.fabricapi.api.event.Event;
-import me.lucko.spark.fabricapi.impl.base.toposort.NodeSorting;
+import me.lucko.spark.fabricapi.eventapi.api.event.Event;
+import me.lucko.spark.fabricapi.eventapi.impl.base.toposort.NodeSorting;
 import net.minecraft.src.ResourceLocation;
 
 import java.lang.reflect.Array;

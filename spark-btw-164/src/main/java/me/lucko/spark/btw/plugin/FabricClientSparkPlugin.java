@@ -27,6 +27,7 @@ import me.lucko.spark.common.tick.TickHook;
 import me.lucko.spark.common.tick.TickReporter;
 import me.lucko.spark.btw.*;
 import me.lucko.spark.btw.mixin.MinecraftClientAccessor;
+import me.lucko.spark.fabricapi.ClientEvents;
 import net.minecraft.src.*;
 import org.jetbrains.annotations.NotNull;
 
@@ -47,7 +48,7 @@ public class FabricClientSparkPlugin extends FabricSparkPlugin implements IComma
     public FabricClientSparkPlugin(FabricSparkMod mod, Minecraft minecraft) {
         super(mod);
         this.minecraft = minecraft;
-        this.gameThreadDumper = new ThreadDumper.GameThread(() -> ((MinecraftClientAccessor) minecraft).getThread());
+        this.gameThreadDumper = new ThreadDumper.GameThread(() -> Thread.currentThread() /*((MinecraftClientAccessor) minecraft).getThread()*/);
     }
 
     @Override
@@ -55,7 +56,7 @@ public class FabricClientSparkPlugin extends FabricSparkPlugin implements IComma
         super.enable();
 
         // events
-        ClientLifecycleEvents.CLIENT_STOPPING.register(this::onDisable);
+        ClientEvents.CLIENT_STOPPING.register(this::onDisable);
 //        ClientCommandRegistrationCallback.EVENT.register(this::onCommandRegister);
 
         registerCommands(this, true);

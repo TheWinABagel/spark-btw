@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package me.lucko.spark.fabricapi.api.event;
+package me.lucko.spark.fabricapi.eventapi.api.event;
 
 import net.minecraft.src.ResourceLocation;
 import org.jetbrains.annotations.ApiStatus;

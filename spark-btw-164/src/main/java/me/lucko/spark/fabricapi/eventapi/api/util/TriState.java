@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package me.lucko.spark.fabricapi.api.util;
+package me.lucko.spark.fabricapi.eventapi.api.util;
 
 import java.util.Objects;
 import java.util.Optional;

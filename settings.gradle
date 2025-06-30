@@ -21,7 +21,7 @@ plugins {
 }
 
 rootProject.name = 'spark'
-include (
+include(
         'spark-api',
         'spark-bukkit',
         'spark-bungeecord',
@@ -33,4 +33,5 @@ include (
         'spark-sponge',
         'spark-standalone-agent',
         'spark-velocity',
+        'spark-btw-164',
 )

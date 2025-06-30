@@ -2,10 +2,10 @@
   "required": true,
   "package": "me.lucko.spark.btw.mixin",
   "client": [
-
+    "fapi.MinecraftMixin"
   ],
   "mixins": [
-
+    "fapi.MinecraftServerMixin"
   ],
   "plugin": "me.lucko.spark.btw.plugin.FabricSparkMixinPlugin"
 }
